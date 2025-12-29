@@ -4,7 +4,11 @@ from sqlalchemy.orm import Session
 
 from .database import engine, Base, get_db
 from . import models
-from .schemas import OperatorCreate, TripCreate, ItineraryDayCreate
+from .schemas import (
+    OperatorCreate,
+    TripCreate,
+    ItineraryDayCreate
+)
 
 # ---------------- CREATE TABLES ----------------
 try:
@@ -19,11 +23,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# ---------------- CORS ----------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://sacred-journeys.vercel.app"
+        "https://sacred-journeys-one.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -124,7 +129,7 @@ def delete_trip(trip_id: int, db: Session = Depends(get_db)):
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
 
-    # Delete itinerary days first
+    # delete itinerary days first
     db.query(models.ItineraryDay).filter(
         models.ItineraryDay.trip_id == trip_id
     ).delete()
@@ -142,7 +147,11 @@ def get_itinerary(trip_id: int, db: Session = Depends(get_db)):
     ).all()
 
 @app.post("/trips/{trip_id}/itinerary")
-def add_itinerary_day(trip_id: int, item: ItineraryDayCreate, db: Session = Depends(get_db)):
+def add_itinerary_day(
+    trip_id: int,
+    item: ItineraryDayCreate,
+    db: Session = Depends(get_db)
+):
     trip = db.query(models.Trip).filter(
         models.Trip.id == trip_id
     ).first()
@@ -166,7 +175,11 @@ def add_itinerary_day(trip_id: int, item: ItineraryDayCreate, db: Session = Depe
 
 # 🔹 UPDATE ITINERARY DAY
 @app.put("/itinerary/{day_id}")
-def update_itinerary_day(day_id: int, item: ItineraryDayCreate, db: Session = Depends(get_db)):
+def update_itinerary_day(
+    day_id: int,
+    item: ItineraryDayCreate,
+    db: Session = Depends(get_db)
+):
     day = db.query(models.ItineraryDay).filter(
         models.ItineraryDay.id == day_id
     ).first()
