@@ -4,11 +4,7 @@ from sqlalchemy.orm import Session
 
 from .database import engine, Base, get_db
 from . import models
-from .schemas import (
-    OperatorCreate,
-    TripCreate,
-    ItineraryDayCreate
-)
+from .schemas import OperatorCreate, TripCreate, ItineraryDayCreate
 
 # ---------------- CREATE TABLES ----------------
 try:
@@ -25,7 +21,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://sacred-journeys.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -46,10 +45,7 @@ def get_operators(db: Session = Depends(get_db)):
     return db.query(models.Operator).all()
 
 @app.post("/operators")
-def create_operator(
-    operator: OperatorCreate,
-    db: Session = Depends(get_db)
-):
+def create_operator(operator: OperatorCreate, db: Session = Depends(get_db)):
     existing = db.query(models.Operator).filter(
         models.Operator.email == operator.email
     ).first()
@@ -99,12 +95,11 @@ def create_trip(trip: TripCreate, db: Session = Depends(get_db)):
 
 # 🔹 UPDATE TRIP
 @app.put("/trips/{trip_id}")
-def update_trip(
-    trip_id: int,
-    trip: TripCreate,
-    db: Session = Depends(get_db)
-):
-    existing = db.query(models.Trip).filter(models.Trip.id == trip_id).first()
+def update_trip(trip_id: int, trip: TripCreate, db: Session = Depends(get_db)):
+    existing = db.query(models.Trip).filter(
+        models.Trip.id == trip_id
+    ).first()
+
     if not existing:
         raise HTTPException(status_code=404, detail="Trip not found")
 
@@ -119,15 +114,24 @@ def update_trip(
     db.refresh(existing)
     return existing
 
-# 🔹 DELETE TRIP
+# 🔹 DELETE TRIP (SAFE)
 @app.delete("/trips/{trip_id}")
 def delete_trip(trip_id: int, db: Session = Depends(get_db)):
-    trip = db.query(models.Trip).filter(models.Trip.id == trip_id).first()
+    trip = db.query(models.Trip).filter(
+        models.Trip.id == trip_id
+    ).first()
+
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
 
+    # Delete itinerary days first
+    db.query(models.ItineraryDay).filter(
+        models.ItineraryDay.trip_id == trip_id
+    ).delete()
+
     db.delete(trip)
     db.commit()
+
     return {"message": "Trip deleted successfully"}
 
 # ---------------- ITINERARY ----------------
@@ -138,12 +142,11 @@ def get_itinerary(trip_id: int, db: Session = Depends(get_db)):
     ).all()
 
 @app.post("/trips/{trip_id}/itinerary")
-def add_itinerary_day(
-    trip_id: int,
-    item: ItineraryDayCreate,
-    db: Session = Depends(get_db)
-):
-    trip = db.query(models.Trip).filter(models.Trip.id == trip_id).first()
+def add_itinerary_day(trip_id: int, item: ItineraryDayCreate, db: Session = Depends(get_db)):
+    trip = db.query(models.Trip).filter(
+        models.Trip.id == trip_id
+    ).first()
+
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
 
@@ -163,11 +166,7 @@ def add_itinerary_day(
 
 # 🔹 UPDATE ITINERARY DAY
 @app.put("/itinerary/{day_id}")
-def update_itinerary_day(
-    day_id: int,
-    item: ItineraryDayCreate,
-    db: Session = Depends(get_db)
-):
+def update_itinerary_day(day_id: int, item: ItineraryDayCreate, db: Session = Depends(get_db)):
     day = db.query(models.ItineraryDay).filter(
         models.ItineraryDay.id == day_id
     ).first()
