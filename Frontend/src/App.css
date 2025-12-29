@@ -1,0 +1,104 @@
+/* ---------- GLOBAL ---------- */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0f0f0f;
+  color: #eaeaea;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+/* ---------- HEADINGS ---------- */
+h1 {
+  text-align: center;
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+h2 {
+  margin-top: 40px;
+  text-align: center;
+  opacity: 0.9;
+}
+
+/* ---------- FORMS ---------- */
+.form-card {
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 12px;
+  display: grid;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+input {
+  background: #121212;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #fff;
+  font-size: 14px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #888;
+}
+
+/* ---------- BUTTONS ---------- */
+button {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #777;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* ---------- TRIP CARD ---------- */
+.trip-card {
+  background: #1a1a1a;
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 30px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+.trip-card h3 {
+  margin-top: 0;
+  font-size: 22px;
+}
+
+/* ---------- ITINERARY ---------- */
+.itinerary {
+  margin-top: 20px;
+}
+
+.itinerary-day {
+  border-left: 3px solid #555;
+  padding-left: 16px;
+  margin-bottom: 18px;
+}
+
+.itinerary-day p {
+  margin: 4px 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* ---------- SMALL SCREENS ---------- */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 32px;
+  }
+}
