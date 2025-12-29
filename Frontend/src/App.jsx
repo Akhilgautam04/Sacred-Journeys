@@ -4,6 +4,9 @@ import "./App.css";
 import CreateTripForm from "./components/CreateTripForm";
 import TripCard from "./components/TripCard";
 
+// ✅ CHANGE THIS IF BACKEND URL CHANGES
+const BACKEND_URL = "https://sacred-journeys-api.onrender.com";
+
 function App() {
   const [trips, setTrips] = useState([]);
   const [itineraries, setItineraries] = useState({});
@@ -27,24 +30,26 @@ function App() {
     lodging: "",
   });
 
+  // ---------- FETCH TRIPS ----------
   const fetchTrips = () => {
-    fetch("http://localhost:8000/trips")
-      .then(res => res.json())
-      .then(data => {
+    fetch(`${BACKEND_URL}/trips`)
+      .then((res) => res.json())
+      .then((data) => {
         setTrips(data);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   };
 
   useEffect(() => {
     fetchTrips();
   }, []);
 
-  // -------- CREATE TRIP --------
+  // ---------- CREATE TRIP ----------
   const createTrip = (e) => {
     e.preventDefault();
 
-    fetch("http://localhost:8000/trips", {
+    fetch(`${BACKEND_URL}/trips`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -52,54 +57,52 @@ function App() {
         price: Number(tripForm.price),
         operator_id: 1,
       }),
-    }).then(() => fetchTrips());
+    }).then(() => {
+      setTripForm({
+        name: "",
+        start_date: "",
+        end_date: "",
+        start_location: "",
+        end_location: "",
+        price: "",
+        operator_id: 1,
+      });
+      fetchTrips();
+    });
   };
 
-  // -------- UPDATE TRIP --------
-  const updateTrip = (tripId, data) => {
-    fetch(`http://localhost:8000/trips/${tripId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...data, operator_id: 1 }),
-    }).then(() => fetchTrips());
-  };
-
-  // -------- DELETE TRIP --------
-  const deleteTrip = (tripId) => {
-    if (!window.confirm("Delete this trip?")) return;
-
-    fetch(`http://localhost:8000/trips/${tripId}`, {
-      method: "DELETE",
-    }).then(() => fetchTrips());
-  };
-
-  // -------- ITINERARY --------
+  // ---------- FETCH ITINERARY ----------
   const fetchItinerary = (tripId) => {
-    fetch(`http://localhost:8000/trips/${tripId}/itinerary`)
-      .then(res => res.json())
-      .then(data => {
-        setItineraries(prev => ({ ...prev, [tripId]: data }));
+    fetch(`${BACKEND_URL}/trips/${tripId}/itinerary`)
+      .then((res) => res.json())
+      .then((data) => {
+        setItineraries((prev) => ({ ...prev, [tripId]: data }));
       });
   };
 
+  // ---------- ADD ITINERARY ----------
   const addItinerary = (tripId) => {
-    fetch(`http://localhost:8000/trips/${tripId}/itinerary`, {
+    fetch(`${BACKEND_URL}/trips/${tripId}/itinerary`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(itineraryForm),
-    }).then(() => fetchItinerary(tripId));
-  };
-
-  const deleteItineraryDay = (dayId, tripId) => {
-    fetch(`http://localhost:8000/itinerary/${dayId}`, {
-      method: "DELETE",
-    }).then(() => fetchItinerary(tripId));
+    }).then(() => {
+      setItineraryForm({
+        day_date: "",
+        location: "",
+        transport: "",
+        pilgrimage_site: "",
+        lodging: "",
+      });
+      fetchItinerary(tripId);
+    });
   };
 
   return (
     <div className="container">
       <h1>🛕 Sacred Journeys</h1>
 
+      {/* CREATE TRIP */}
       <CreateTripForm
         tripForm={tripForm}
         onChange={(e) =>
@@ -112,21 +115,22 @@ function App() {
 
       {loading && <p>Loading...</p>}
 
-      {trips.map(trip => (
-        <TripCard
-          key={trip.id}
-          trip={trip}
-          itinerary={itineraries[trip.id]}
-          onViewItinerary={() => fetchItinerary(trip.id)}
-          onItineraryChange={(e) =>
-            setItineraryForm({ ...itineraryForm, [e.target.name]: e.target.value })
-          }
-          onAddItinerary={() => addItinerary(trip.id)}
-          onDeleteTrip={deleteTrip}
-          onUpdateTrip={updateTrip}
-          onDeleteItineraryDay={deleteItineraryDay}
-        />
-      ))}
+      {!loading &&
+        trips.map((trip) => (
+          <TripCard
+            key={trip.id}
+            trip={trip}
+            itinerary={itineraries[trip.id]}
+            onViewItinerary={() => fetchItinerary(trip.id)}
+            onItineraryChange={(e) =>
+              setItineraryForm({
+                ...itineraryForm,
+                [e.target.name]: e.target.value,
+              })
+            }
+            onAddItinerary={() => addItinerary(trip.id)}
+          />
+        ))}
     </div>
   );
 }
